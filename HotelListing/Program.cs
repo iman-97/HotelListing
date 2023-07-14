@@ -1,10 +1,15 @@
+using HotelListing.Configurations;
+using HotelListing.Data;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddDbContext<DatabaseContext>(o =>
+    o.UseSqlServer(builder.Configuration.GetConnectionString("sqlConnection"))
+);
 
 builder.Services.AddCors(o =>
 {
@@ -13,6 +18,8 @@ builder.Services.AddCors(o =>
         .AllowAnyMethod()
         .AllowAnyHeader());
 });
+
+builder.Services.AddAutoMapper(typeof(MapperInitializer));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -24,6 +31,8 @@ builder.Host.UseSerilog((ctx, lc) => lc
         outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}",
         rollingInterval: RollingInterval.Day,
         restrictedToMinimumLevel: LogEventLevel.Information));
+
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
